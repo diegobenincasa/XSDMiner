@@ -34,7 +34,10 @@ public class MineXSD implements CommitVisitor{
     static int commitCount = 0;
     static Map<String, Integer> modsCount = new HashMap<String, Integer>();
     static boolean headerPrint = false;
-    static String baseFileLocation = "/home/diego/√Årea de Trabalho/";
+    //static String baseFileLocation = "/home/diego/¡rea de Trabalho/";
+    static String baseFileLocation = "c:/github/";
+    //static String baseFileLocation = "c:/";
+    
     static Map<String, Integer> modsElements = new HashMap<String, Integer>();
     static Map<String, Integer> modsAttributes = new HashMap<String, Integer>();
     static Map<String, Integer> modsComplexTypes = new HashMap<String, Integer>();

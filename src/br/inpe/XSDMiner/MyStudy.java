@@ -32,9 +32,12 @@ public class MyStudy implements Study {
             //"xwiki-platform";
             //"zanata-server";
     
-    String projectDir = "/home/diego/github/" + project;
+    //String projectDir = "/home/diego/github/" + project;
+    String projectDir = "c:/github/" + project;
+    //String projectDir = "c:/" + project;
     
-    String output = "/home/diego/√Årea de Trabalho/mm_output/" + project + ".csv";
+    //String output = "/home/diego/¡rea de Trabalho/mm_output/" + project + ".csv";
+    String output = "c:/Users/Diego/Desktop/mm_output/" + project + ".csv";
     
     public static void main(String[] args) {
         new MetricMiner2().start(new MyStudy());
