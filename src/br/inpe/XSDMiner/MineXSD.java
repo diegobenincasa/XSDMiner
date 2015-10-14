@@ -66,10 +66,11 @@ public class MineXSD implements CommitVisitor{
                             "MOD_CTYPES"
                     );
                 }
-                repo.getScm().checkout(commit.getHash());
                 
                 if(commitCount == 0)
                 {
+                    repo.getScm().checkout(commit.getHash());
+                    
                     List<RepositoryFile> files = repo.getScm().files();
                     
                     for(RepositoryFile file : files) {
@@ -102,6 +103,7 @@ public class MineXSD implements CommitVisitor{
                         modsComplexTypes.put(shortFName, qComplexTypes);
                     }
                     commitCount++;
+                    repo.getScm().reset();
                 }
                 
                 else
