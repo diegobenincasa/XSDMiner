@@ -24,20 +24,20 @@ public class MyStudy implements Study {
      */
     String project =
             //"datacite-schema";
-            //"opennms"; // FAIL!!
+            //"opennms";
             //"opennms-mirror";
-            "SOCIETIES-Platform";
-            //"spring-ws"; // OK
-            //"XeroAPI-Schemas"; // OK
+            //"SOCIETIES-Platform";
+            "spring-ws";
+            //"XeroAPI-Schemas";
             //"xwiki-platform";
             //"zanata-server";
     
     //String projectDir = "/home/diego/github/" + project;
-    String projectDir = "c:/github/" + project;
+    String projectDir = "C:/github/" + project;
     //String projectDir = "c:/" + project;
     
     //String output = "/home/diego/Área de Trabalho/mm_output/" + project + ".csv";
-    String output = "c:/Users/Diego/Desktop/mm_output/" + project + ".csv";
+    String output = "c:/Users/Diego/Desktop/" + project + ".csv";
     
     public static void main(String[] args) {
         new MetricMiner2().start(new MyStudy());
@@ -48,6 +48,7 @@ public class MyStudy implements Study {
         new RepositoryMining()
                 .in(GitRepository.singleProject(projectDir))
                 .through(Commits.all())
+                .withThreads(4)
                 .process(new MineXSD(), new CSVFile(output))
                 .mine();
     }

@@ -9,12 +9,9 @@ import br.com.metricminer2.domain.Commit;
 import br.com.metricminer2.domain.Modification;
 import br.com.metricminer2.persistence.PersistenceMechanism;
 import br.com.metricminer2.scm.CommitVisitor;
-import br.com.metricminer2.scm.RepositoryFile;
 import br.com.metricminer2.scm.SCMRepository;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,129 +64,116 @@ public class MineXSD implements CommitVisitor{
                     );
                 }
                 
-                if(commitCount == 0)
                 {
-                    repo.getScm().checkout(commit.getHash());
-                    
-                    List<RepositoryFile> files = repo.getScm().files();
-                    
-                    for(RepositoryFile file : files) {
-                        if(!file.fileNameEndsWith("xsd")) continue;
-
-                        File soFile = file.getFile();
-                        String shortFName = soFile.getName();
-                        modsCount.put(shortFName, 0);
-
-                        XSDParser parser = new XSDParser(soFile, "xs:element", "xs:attribute", "xs:complexType");
-                        //XSDParser parser = new XSDParser(soFile, "element", "attribute", "complexType");
-                        int qElements = parser.getQuantityOfElements();
-                        int qAttributes = parser.getQuantityOfAttributes();
-                        int qComplexTypes = parser.getQuantityOfComplexTypes();
-                        
-                        writer.write(
-                            commit.getHash(),
-                            String.valueOf(commitCount),
-                            shortFName,
-                            String.valueOf(0),
-                            String.valueOf(qElements),
-                            String.valueOf(qAttributes),
-                            String.valueOf(qComplexTypes),
-                            String.valueOf(0),
-                            String.valueOf(0),
-                            String.valueOf(0)
-                        );
-                        modsElements.put(shortFName, qElements);
-                        modsAttributes.put(shortFName, qAttributes);
-                        modsComplexTypes.put(shortFName, qComplexTypes);
-                    }
-                    commitCount++;
-                    repo.getScm().reset();
-                }
-                
-                else
+                for(Modification m : commit.getModifications())
                 {
-                    for(Modification m : commit.getModifications())
+                    String fName = m.getFileName();
+                    if(!fName.endsWith("xsd")) continue;
+
+                    Integer oldMods = modsCount.get(fName);
+                    if(oldMods != null)
                     {
-                        String fName = m.getFileName();
-                        if(!fName.endsWith("xsd")) continue;
+                    	modsCount.put(fName, oldMods+1);
+                    }
+                    else
+                    {
+                    	modsCount.put(fName, 0);
+                    }
 
-                        int oldMods = modsCount.get(fName);
-                        modsCount.put(fName, oldMods+1);
+                    // CREATE PARSER AND FETCH METRICS                       
+                    XSDParser parser = new XSDParser(m.getSourceCode().getBytes(), "xs:element", "xs:attribute", "xs:complexType");
+                    int qElements = parser.getQuantityOfElements();
+                    int qAttributes = parser.getQuantityOfAttributes();
+                    int qComplexTypes = parser.getQuantityOfComplexTypes();
 
-                        //File soFile = new File(baseFileLocation + fName);
-                        //FileUtils.writeStringToFile(soFile, m.getSourceCode());
-                        //XSDParser parser = new XSDParser(soFile.getPath(), "xs:element", "xs:attribute", "xs:complexType");
-                        XSDParser parser = new XSDParser(m.getSourceCode().getBytes(), "xs:element", "xs:attribute", "xs:complexType");
-                        //XSDParser parser = new XSDParser(soFile.getPath(), "element", "attribute", "complexType");
-                        
-                        int prevElements = modsElements.get(fName),
-                                actualElements = parser.getQuantityOfElements();
-
-                        int prevAttributes = modsAttributes.get(fName),
-                                actualAttributes = parser.getQuantityOfAttributes();
-
-                        int prevComplexTypes = modsComplexTypes.get(fName),
-                                actualComplexTypes = parser.getQuantityOfComplexTypes();
-
-                        String updateElements, updateAttributes, updateComplexTypes;
-
-                        if(actualElements > prevElements)
+                    // INITIALIZE COMPARISON VARIABLES (CV)
+                    Integer recentElements = modsElements.get(fName),
+                    	recentAttributes = modsAttributes.get(fName),
+                    	recentComplexTypes = modsComplexTypes.get(fName);
+                    String updateElements, updateAttributes, updateComplexTypes;
+                    
+                    // CHECK IF THE CURRENT COMMIT HAS THE FIRST VISITED MOD IN CURRENT FILE AND SET CV'S TO 0 IN THIS SCENARIO;
+                    // IF NOT, COMPARE IT TO MOST RECENT MODIFICATION
+                    
+                    // 1) DO IT WITH XS:ELEMENT
+                    if(recentElements == null)
+                    {
+                        updateElements = "2"; // 2 MEANS HEAD -- DO NOT TAKE PART IN COMPARISONS
+                    }
+                    else
+                    {
+                    	if(qElements > recentElements)
                         {
                             updateElements = "-1";
-                            modsElements.put(fName, actualElements);
                         }
-                        else if(actualElements == prevElements)
+                        else if(qElements == recentElements)
                             updateElements = "0";
                         else
                         {
                             updateElements = "1";
-                            modsElements.put(fName, actualElements);
                         }
-
-                        if(actualAttributes > prevAttributes)
+                    }
+                    
+                    // 2) DO IT WITH XS:ATTRIBUTE
+                    if(recentAttributes == null)
+                    {
+                        updateAttributes = "2"; // 2 MEANS HEAD -- DO NOT TAKE PART IN COMPARISONS
+                    }
+                    else
+                    {
+                    	if(qAttributes > recentAttributes)
                         {
                             updateAttributes = "-1";
-                            modsAttributes.put(fName, actualAttributes);
                         }
-                        else if(actualAttributes == prevAttributes)
+                        else if(qAttributes == recentAttributes)
                             updateAttributes = "0";
                         else
                         {
                             updateAttributes = "1";
-                            modsAttributes.put(fName, actualAttributes);
                         }
-
-                        if(actualComplexTypes > prevComplexTypes)
+                    }
+                    
+                    // 3) DO IT WITH XS:COMPLEXTYPE
+                    if(recentComplexTypes == null)
+                    {
+                        updateComplexTypes = "2"; // 2 MEANS HEAD -- DO NOT TAKE PART IN COMPARISONS
+                    }
+                    else
+                    {
+                    	if(qComplexTypes > recentComplexTypes)
                         {
                             updateComplexTypes = "-1";
-                            modsComplexTypes.put(fName, actualComplexTypes);
                         }
-                        else if(actualComplexTypes == prevComplexTypes)
+                        else if(qComplexTypes == recentComplexTypes)
                             updateComplexTypes = "0";
                         else
                         {
                             updateComplexTypes = "1";
-                            modsComplexTypes.put(fName, actualComplexTypes);
                         }
+                    }
+                    // WRITE CURRENT METRICS TO HASHMAPS
+                    modsElements.put(fName, qElements);
+                    modsAttributes.put(fName, qAttributes);
+                    modsComplexTypes.put(fName, qComplexTypes);
 
-                        writer.write(commit.getHash(),
-                                String.valueOf(commitCount),
-                                fName,
-                                String.valueOf(modsCount.get(fName)),
-                                String.valueOf(actualElements),
-                                String.valueOf(actualAttributes),
-                                String.valueOf(actualComplexTypes),
-                                updateElements,
-                                updateAttributes,
-                                updateComplexTypes
-                        );
-                    } commitCount++;
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(MineXSD.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                repo.getScm().reset();
+                    writer.write(commit.getHash(),
+                            String.valueOf(commitCount),
+                            fName,
+                            String.valueOf(modsCount.get(fName)),
+                            String.valueOf(qElements),
+                            String.valueOf(qAttributes),
+                            String.valueOf(qComplexTypes),
+                            updateElements,
+                            updateAttributes,
+                            updateComplexTypes
+                    );
+                } commitCount++;
             }
+        } catch (IOException ex) {
+            Logger.getLogger(MineXSD.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            repo.getScm().reset();
+        }
     }
 
     public String name() {
