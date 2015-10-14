@@ -28,11 +28,13 @@ public class MineXSD implements CommitVisitor{
      * @param commit
      * @param writer
      */
-    static int commitCount = 0;
+	
+    static long commitCount = 0;
+    static long totalCommit = 0;
     static Map<String, Integer> modsCount = new HashMap<String, Integer>();
     static boolean headerPrint = false;
-    //static String baseFileLocation = "/home/diego/¡rea de Trabalho/";
-    static String baseFileLocation = "c:/github/";
+    //static String baseFileLocation = "/home/diego/√Årea de Trabalho/";
+    //static String baseFileLocation = "c:/github/";
     //static String baseFileLocation = "c:/";
     
     static Map<String, Integer> modsElements = new HashMap<String, Integer>();
@@ -47,7 +49,7 @@ public class MineXSD implements CommitVisitor{
     public void process(SCMRepository repo, Commit commit, PersistenceMechanism writer) {
 
         try {
-                if(headerPrint == false)
+        		if(headerPrint == false)
                 {
                     headerPrint = true;
                     writer.write(
@@ -62,9 +64,12 @@ public class MineXSD implements CommitVisitor{
                             "MOD_ATTRIBUTES",
                             "MOD_CTYPES"
                     );
+                    totalCommit = repo.getScm().totalCommits();
                 }
+
+                float totalPercent = (float)100*commitCount/totalCommit;
+                System.out.println("\bTotal processed: " + String.valueOf(totalPercent) + "%");
                 
-                {
                 for(Modification m : commit.getModifications())
                 {
                     String fName = m.getFileName();
@@ -81,7 +86,7 @@ public class MineXSD implements CommitVisitor{
                     }
 
                     // CREATE PARSER AND FETCH METRICS                       
-                    XSDParser parser = new XSDParser(m.getSourceCode().getBytes(), "xs:element", "xs:attribute", "xs:complexType");
+                    XSDParser parser = new XSDParser(m.getSourceCode().getBytes());
                     int qElements = parser.getQuantityOfElements();
                     int qAttributes = parser.getQuantityOfAttributes();
                     int qComplexTypes = parser.getQuantityOfComplexTypes();
@@ -168,7 +173,6 @@ public class MineXSD implements CommitVisitor{
                             updateComplexTypes
                     );
                 } commitCount++;
-            }
         } catch (IOException ex) {
             Logger.getLogger(MineXSD.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -179,6 +183,4 @@ public class MineXSD implements CommitVisitor{
     public String name() {
         return "developers";
     }
-    
-    
 }

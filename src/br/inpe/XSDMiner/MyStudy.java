@@ -27,17 +27,17 @@ public class MyStudy implements Study {
             //"opennms";
             //"opennms-mirror";
             //"SOCIETIES-Platform";
-            "spring-ws";
+            //"spring-ws";
             //"XeroAPI-Schemas";
-            //"xwiki-platform";
+            "xwiki-platform";
             //"zanata-server";
     
-    //String projectDir = "/home/diego/github/" + project;
-    String projectDir = "C:/github/" + project;
+    String projectDir = "/home/diego/github/" + project;
+    //String projectDir = "C:/github/" + project;
     //String projectDir = "c:/" + project;
     
-    //String output = "/home/diego/¡rea de Trabalho/mm_output/" + project + ".csv";
-    String output = "c:/Users/Diego/Desktop/" + project + ".csv";
+    String output = "/home/diego/√Årea de Trabalho/mm_output/" + project + ".csv";
+    //String output = "c:/Users/Diego/Desktop/" + project + ".csv";
     
     public static void main(String[] args) {
         new MetricMiner2().start(new MyStudy());

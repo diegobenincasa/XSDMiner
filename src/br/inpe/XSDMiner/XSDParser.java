@@ -33,12 +33,9 @@ public class XSDParser {
         return filename;
     }
 
-    public XSDParser(File fl, String XSElement, String XSAttribute, String XSComplexType) throws IOException
+    public XSDParser(File fl) throws IOException
     {
         filename = fl.getPath();
-        _XSElement = XSElement;
-        _XSAttribute = XSAttribute;
-        _XSComplexType = XSComplexType;
 
         try
         {
@@ -47,11 +44,37 @@ public class XSDParser {
             doc = docBuilder.parse(fl);
             doc.getDocumentElement().normalize();
 
-            NodeList list = doc.getElementsByTagName(_XSElement);
-            NodeList list2 = doc.getElementsByTagName(_XSAttribute);
-            NodeList list3 = doc.getElementsByTagName(_XSComplexType);
+            int typeAelementTagName = doc.getElementsByTagName("element").getLength(),
+            	typeBelementTagName = doc.getElementsByTagName("xs:element").getLength();
+            
+            int typeAattributeTagName = doc.getElementsByTagName("attribute").getLength(),
+                typeBattributeTagName = doc.getElementsByTagName("xs:attribute").getLength();
 
-            quantityOfElements = list.getLength();
+            int typeActypeTagName = doc.getElementsByTagName("complexType").getLength(),
+                typeBctypeTagName = doc.getElementsByTagName("xs:complexType").getLength();
+            
+            NodeList list1;
+            NodeList list2;
+            NodeList list3;
+            
+            _XSElement = "element";
+            _XSAttribute = "attribute";
+            _XSComplexType = "complexType";
+            
+            if(typeAelementTagName < typeBelementTagName)
+            	_XSElement = "xs:element";
+            
+            if(typeAattributeTagName < typeBattributeTagName)
+            	_XSAttribute = "xs:attribute";
+            
+            if(typeActypeTagName < typeBctypeTagName)
+            	_XSComplexType = "xs:complexType";
+            
+        	list1 = doc.getElementsByTagName(_XSElement);
+            list2 = doc.getElementsByTagName(_XSAttribute);
+            list3 = doc.getElementsByTagName(_XSComplexType);
+
+            quantityOfElements = list1.getLength();
             quantityOfAttributes = list2.getLength();
             quantityOfComplexTypes = list3.getLength();
         }
@@ -66,12 +89,8 @@ public class XSDParser {
         }
     }
     
-    public XSDParser(byte[] fl, String XSElement, String XSAttribute, String XSComplexType) throws IOException
+    public XSDParser(byte[] fl) throws IOException
     {
-        _XSElement = XSElement;
-        _XSAttribute = XSAttribute;
-        _XSComplexType = XSComplexType;
-
         try
         {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -80,11 +99,48 @@ public class XSDParser {
             doc = docBuilder.parse(new ByteArrayInputStream(fl));
             doc.getDocumentElement().normalize();
 
-            NodeList list = doc.getElementsByTagName(_XSElement);
-            NodeList list2 = doc.getElementsByTagName(_XSAttribute);
-            NodeList list3 = doc.getElementsByTagName(_XSComplexType);
+            int typeAelementTagName = doc.getElementsByTagName("element").getLength(),
+            	typeBelementTagName = doc.getElementsByTagName("xs:element").getLength(),
+            	typeCelementTagName = doc.getElementsByTagName("xsd:element").getLength();
+            
+            int typeAattributeTagName = doc.getElementsByTagName("attribute").getLength(),
+                typeBattributeTagName = doc.getElementsByTagName("xs:attribute").getLength(),
+                typeCattributeTagName = doc.getElementsByTagName("xsd:attribute").getLength();
 
-            quantityOfElements = list.getLength();
+            int typeActypeTagName = doc.getElementsByTagName("complexType").getLength(),
+                typeBctypeTagName = doc.getElementsByTagName("xs:complexType").getLength(),
+                typeCctypeTagName = doc.getElementsByTagName("xsd:complexType").getLength();
+            
+            NodeList list1;
+            NodeList list2;
+            NodeList list3;
+            
+            if(typeAelementTagName > typeBelementTagName && typeAelementTagName > typeCelementTagName)
+            	_XSElement = "element";
+            else if(typeBelementTagName > typeAelementTagName && typeBelementTagName > typeCelementTagName)
+            	_XSElement = "xs:element";
+            else
+            	_XSElement = "xsd:element";
+            
+            if(typeAattributeTagName > typeBattributeTagName && typeAattributeTagName > typeCattributeTagName)
+            	_XSAttribute = "attribute";
+            else if(typeBattributeTagName > typeAattributeTagName && typeBattributeTagName > typeCattributeTagName)
+            	_XSAttribute = "xs:attribute";
+            else
+            	_XSAttribute = "xsd:attribute";
+            
+            if(typeActypeTagName > typeBctypeTagName && typeActypeTagName > typeCctypeTagName)
+            	_XSComplexType = "complexType";
+            else if(typeBctypeTagName > typeActypeTagName && typeBctypeTagName > typeCctypeTagName)
+            	_XSComplexType = "xs:complexType";
+            else
+            	_XSComplexType = "xsd:complexType";
+            
+            list1 = doc.getElementsByTagName(_XSElement);
+            list2 = doc.getElementsByTagName(_XSAttribute);
+            list3 = doc.getElementsByTagName(_XSComplexType);
+
+            quantityOfElements = list1.getLength();
             quantityOfAttributes = list2.getLength();
             quantityOfComplexTypes = list3.getLength();
         }
